@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f2e8">
+  <meta name="description" content="Сценарій захисту STEM-проєкту про стан гонитви для трьох учасників. Репліки, демонстрації, результати та повний звіт.">
+  <title>Race Condition · Сценарій захисту STEM</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#scenario">Перейти до сценарію</a>
+  <header class="topline wrap">
+    <a class="wordmark" href="./">Операційні системи <span>/</span> STEM</a>
+    <a class="link" href="assets/report.pdf" target="_blank" rel="noopener">Повний звіт PDF ↗</a>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-text">
+        <p class="eyebrow">ІПЗ-31 · СЦЕНАРІЙ ЗАХИСТУ · 7 ХВ</p>
+        <h1 id="title">Race <br>Condition<span>.</span></h1>
+        <p class="subtitle">Синхронізація потоків і втрачені оновлення</p>
+        <p class="byline">Тарас Загорський · Назар Новосел · Іван Боровиков</p>
+        <div class="actions">
+          <a class="button primary" href="#scenario">До сценарію ↓</a>
+          <a class="button" href="assets/report.pdf#page=5" target="_blank" rel="noopener">Внесок команди ↗</a>
+        </div>
+      </div>
+      <figure class="trace">
+        <figcaption><span>Модель двох банкоматів</span><span>Початковий баланс 100 ₴</span></figcaption>
+        <table>
+          <thead><tr><th scope="col">Операція</th><th scope="col">Потік A</th><th scope="col">Потік B</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Читання</th><td>100</td><td>100</td></tr>
+            <tr><th scope="row">Поповнення</th><td>+50</td><td>+30</td></tr>
+            <tr><th scope="row">Запис</th><td>150</td><td class="lost">130</td></tr>
+          </tbody>
+        </table>
+        <div class="trace-result"><span>Отримано <strong>130 ₴</strong></span><span>Очікувано <strong>180 ₴</strong></span></div>
+      </figure>
+    </section>
+
+    <div class="content">
+      <aside class="sidebar">
+        <nav aria-label="Етапи захисту">
+          <p class="eyebrow">ЧЕРГА ВИСТУПІВ</p>
+          <a href="#taras">00:00 <span>Тарас · вступ</span></a>
+          <a href="#nazar">01:15 <span>Назар · демонстрація</span></a>
+          <a href="#ivan">03:45 <span>Іван · модель пам’яті</span></a>
+          <a href="#summary">05:30 <span>Тарас · висновок</span></a>
+        </nav>
+        <button class="button print" type="button" hidden>Друк сценарію</button>
+      </aside>
+
+      <div id="scenario" class="script">
+        <section class="prep" aria-labelledby="prep">
+          <h2 id="prep">Перед захистом</h2>
+          <p>Відкрийте PDF і термінал у кореневій теці «Operation Systme». Перевірте <code>./demo.sh stem 2</code>. На екрані тримайте цю сторінку, звіт і термінал. Якщо запуск зірветься, відкрийте збережений результат із відповідного етапу.</p>
+        </section>
+
+        <article class="stage" id="taras">
+          <header><p class="eyebrow">00:00–01:15 · ТАРАС ЗАГОРСЬКИЙ</p><h2>Постановка задачі</h2></header>
+          <div class="stage-body">
+            <div>
+              <h3>Що сказати</h3>
+              <p>«Тема нашого проєкту — “Синхронізація потоків: дослідження проблеми Race Condition”. Ми перевіряли, що стається, коли кілька потоків одночасно змінюють спільний лічильник, і скільки часу коштують різні способи синхронізації».</p>
+              <p>«Я відповідав за постановку задачі, бенчмарк і аналіз. Назар підготував демонстрації, задачу “виробник–споживач” і модель банку. Іван дослідив модель пам’яті, машинний код і провів вимірювання на x86‑64».</p>
+            </div>
+            <div>
+              <h3>Що показати</h3>
+              <ol><li>Титульну сторінку PDF із темою та трьома авторами.</li><li>Таблицю 1 із розподілом роботи, якщо викладач запитає про внесок.</li></ol>
+              <a class="link" href="assets/report.pdf#page=1" target="_blank" rel="noopener">Титульна сторінка ↗</a>
+              <a class="link" href="assets/report.pdf#page=5" target="_blank" rel="noopener">Внесок команди · с. 5 ↗</a>
+            </div>
+          </div>
+          <p class="cue"><b>Передача Назару</b> «Назаре, покажи, де зникають оновлення».</p>
+        </article>
+
+        <article class="stage" id="nazar">
+          <header><p class="eyebrow">01:15–03:45 · НАЗАР НОВОСЕЛ</p><h2>Гонитва в терміналі</h2></header>
+          <div class="stage-body">
+            <div>
+              <h3>Що сказати</h3>
+              <p>«Чотири потоки збільшують спільний лічильник по мільйону разів. Має бути 4 мільйони. Без захисту частина збільшень губиться. Після додавання м’ютекса отримуємо рівно 4 мільйони».</p>
+              <p>«Ось покроковий приклад. Два банкомати прочитали баланс 100 грн. Вони записали 150 і 130 грн, тому другий запис затер перше поповнення. З м’ютексом другий потік читає вже 150 грн, а підсумок дорівнює 180 грн».</p>
+            </div>
+            <div>
+              <h3>Що показати</h3>
+              <p>Спочатку порівняйте рядки <b>«Очікувано»</b> та <b>«Отримано»</b>. Число без захисту може змінюватися між запусками.</p>
+              <div class="command"><code>./demo.sh stem 2</code><button type="button" class="copy" hidden>Копіювати</button></div>
+              <p>Потім покажіть два читання 100 грн і підсумок із м’ютексом.</p>
+              <div class="command"><code>./demo.sh stem 3</code><button type="button" class="copy" hidden>Копіювати</button></div>
+              <a class="link" href="assets/race-demo.png" target="_blank" rel="noopener">Резерв · лічильник ↗</a>
+              <a class="link" href="assets/race-trace.png" target="_blank" rel="noopener">Резерв · банкомати ↗</a>
+            </div>
+          </div>
+          <p class="cue"><b>Передача Івану</b> «Іване, поясни, що змінюється, коли окремі операції вже атомарні».</p>
+        </article>
+
+        <article class="stage" id="ivan">
+          <header><p class="eyebrow">03:45–05:30 · ІВАН БОРОВИКОВ</p><h2>Що бачать потоки</h2></header>
+          <div class="stage-body">
+            <div>
+              <h3>Що сказати</h3>
+              <p>«У Store Buffering два потоки записують одиницю у власну змінну й читають змінну іншого. Спочатку обидві змінні дорівнюють нулю. Ми перевірили, як часто обидва читання повертають нуль».</p>
+              <p>«На Apple M1 Pro провели по п’ять запусків на режим. Атомарні операції <code>relaxed</code> дали 3 643 результати (0, 0) з 5 мільйонів ітерацій. Із бар’єром <code>seq_cst</code> таких випадків у цих запусках не зафіксовано».</p>
+            </div>
+            <div>
+              <h3>Що показати</h3>
+              <p>Відкрийте графік. Сині точки показують п’ять запусків без бар’єра. Помаранчеві позначки лежать на нулі.</p>
+              <a class="link" href="assets/store-buffering.png" target="_blank" rel="noopener">Графік Store Buffering ↗</a>
+              <a class="link" href="assets/report.pdf#page=37" target="_blank" rel="noopener">Звіт · с. 37 ↗</a>
+              <a class="link" href="assets/store-buffering.csv" download>Сирі результати CSV ↓</a>
+            </div>
+          </div>
+          <p class="cue"><b>Передача Тарасу</b> «Тарасе, підсумуй, як це впливає на вибір механізму».</p>
+        </article>
+
+        <article class="stage" id="summary">
+          <header><p class="eyebrow">05:30–07:00 · ТАРАС ЗАГОРСЬКИЙ</p><h2>Результат і висновок</h2></header>
+          <div class="stage-body">
+            <div>
+              <h3>Що сказати</h3>
+              <p>«У серії з чотирма потоками і м’ютекс, і атомарне додавання дали правильний підсумок у всіх повторах. Медіанний час м’ютекса був більшим у 1,71 раза на ARM64 та 4,06 раза на x86‑64. Це порівняння механізмів усередині кожної платформи».</p>
+              <p>«Для простого лічильника підійшло атомарне додавання. Для операції з кількома пов’язаними змінними, як-от банківський переказ, м’ютекс дозволяє захистити всю критичну секцію».</p>
+            </div>
+            <div>
+              <h3>Що показати</h3>
+              <p>Порівняйте стовпчики <b>«атомарна операція»</b> та <b>«м’ютекс»</b> одного кольору. Термінал виведе медіани й число коректних повторів.</p>
+              <div class="command"><code>./demo.sh stem 4</code><button type="button" class="copy" hidden>Копіювати</button></div>
+              <a class="link" href="assets/benchmark.png" target="_blank" rel="noopener">Графік часу ↗</a>
+              <a class="link" href="assets/report.pdf#page=40" target="_blank" rel="noopener">Висновки · с. 40 ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <section class="questions" aria-labelledby="questions">
+          <h2 id="questions">Запитання після виступу</h2>
+          <details><summary>Чому кожен запуск без м’ютекса дає різне число?</summary><p>Кількість втрачених оновлень залежить від того, як чергуються читання і записи різних потоків.</p></details>
+          <details><summary>Чому локальне накопичення швидше?</summary><p>Потоки працюють із приватними значеннями. Вони об’єднують результати наприкінці, тому підхід підходить, коли потрібна підсумкова сума.</p></details>
+          <details><summary>Чи доводять заміри, що одна архітектура швидша?</summary><p>Ми порівнювали дві конкретні системи. Вони мали різні процесори, кількість віртуальних процесорів і версії ПЗ. Перевага атомарного додавання над м’ютексом спостерігалась усередині обох систем.</p></details>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="footer wrap">
+    <span>Синхронізація потоків · ІПЗ-31</span>
+    <a class="link" href="assets/report.pdf" target="_blank" rel="noopener">Повний звіт PDF ↗</a>
+  </footer>
+</body>
+</html>
