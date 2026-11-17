@@ -114,6 +114,7 @@ code { font: .9em var(--mono); overflow-wrap: anywhere; }
   background: #f4f6ff; color: #223663; border: 0; border-radius: .16rem;
   font-size: .77rem; font-weight: 700; padding: .24rem .42rem; cursor: pointer;
 }
+.command .multiline { flex-basis: 100%; white-space: pre-wrap; }
 .copy:focus-visible { outline-color: #afc4ff; }
 .copy:hover { background: #d9e3ff; }
 .cue { border-top: 1px solid var(--line); margin-top: 1.1rem; padding-top: .65rem; color: var(--muted); }
