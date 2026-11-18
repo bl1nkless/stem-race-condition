@@ -87,6 +87,29 @@ ol { padding-inline-start: 1.35rem; margin-block: 0 .85rem; }
 }
 .sidebar nav a span { color: var(--ink); font: 680 .95rem/1.25 var(--body); }
 .sidebar nav a:hover span { color: var(--blue); text-decoration: underline; }
+.sidebar nav .nav-extra { display: block; }
+.step-links { display: flex; flex-wrap: wrap; gap: .2rem .55rem; margin: -.15rem 0 .45rem 1rem; }
+.sidebar nav .step-links a { display: inline; font: 650 .78rem/1.35 var(--body); padding-block: .16rem; text-decoration: underline; text-underline-offset: .18em; }
+.step, #prep, #evidence, #questions { scroll-margin-top: 1.5rem; }
+.step { border-top: 1px solid var(--line); padding-block: 1rem 1.3rem; min-width: 0; }
+.step + .step { margin-top: .25rem; }
+.stage .step h3 { color: var(--ink); font-size: 1.22rem; line-height: 1.25; margin-bottom: .7rem; }
+.step h3 span { color: var(--blue); font: 700 .8rem/1.4 var(--mono); margin-right: .55rem; white-space: nowrap; }
+.step p, .questions > p { margin: .55rem 0; max-width: 76ch; }
+.step .say { border-inline-start: 2px solid #a7b8e5; padding-inline-start: .8rem; }
+.terminal { margin: .75rem 0; }
+.terminal figcaption { font-size: .82rem; color: var(--muted); font-weight: 700; margin-bottom: .2rem; }
+.output {
+  background: var(--panel); color: var(--panel-text); padding: .75rem .85rem;
+  border-radius: .28rem; font: .84rem/1.55 var(--mono); white-space: pre-wrap;
+  overflow-wrap: anywhere; margin: .45rem 0; tab-size: 2;
+}
+.output code { font: inherit; }
+.table-scroll { overflow-x: auto; }
+.evidence-table { width: 100%; text-align: left; border-collapse: collapse; }
+.evidence-table td, .evidence-table th { border-bottom: 1px solid var(--line); padding: .4rem; vertical-align: top; }
+.evidence-table a { color: var(--blue); }
+
 .print { margin-top: 1.2rem; font-size: .91rem; }
 
 .script { display: grid; gap: 2rem; min-width: 0; }
@@ -99,11 +122,7 @@ ol { padding-inline-start: 1.35rem; margin-block: 0 .85rem; }
   font: 730 clamp(1.7rem, 3.5vw, 2.55rem)/1.12 var(--title); letter-spacing: -.047em;
   margin-block: .26rem 1.05rem;
 }
-.stage-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .95fr); gap: clamp(1.1rem, 3.8vw, 2.7rem); }
-.stage-body > div:nth-child(2) { border-left: 1px solid var(--line); padding-left: 1.15rem; }
 .stage h3 { color: var(--blue); font-size: .96rem; margin-bottom: .4rem; }
-.stage-body p + p { margin-top: .7rem; }
-.stage-body .link { display: table; margin-top: .4rem; }
 code { font: .9em var(--mono); overflow-wrap: anywhere; }
 .command {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -131,16 +150,15 @@ details p { margin: .3rem 0 0 1.15rem; max-width: 64ch; }
   .hero { gap: 1.4rem; }
   .content { grid-template-columns: 1fr; padding-top: 1.3rem; }
   .sidebar { position: static; display: flex; justify-content: space-between; gap: .7rem; flex-wrap: wrap; align-items: flex-start; }
-  .sidebar nav { grid-template-columns: repeat(2, 1fr); gap: .2rem 1.15rem; }
+  .sidebar nav { grid-template-columns: 1fr; gap: .2rem; }
   .sidebar nav p { grid-column: 1 / -1; margin-bottom: .2rem; }
   .print { margin-top: 0; }
 }
 
 @media (max-width: 680px) {
-  .hero, .stage-body { grid-template-columns: 1fr; }
+  .hero { grid-template-columns: 1fr; }
   .hero { align-items: start; }
   .hero h1 { font-size: clamp(3.7rem, 16vw, 6rem); }
-  .stage-body > div:nth-child(2) { padding-left: .85rem; }
   .topline { flex-wrap: wrap; gap: .25rem 1rem; }
   .sidebar nav { column-gap: .85rem; }
 }
@@ -158,8 +176,9 @@ details p { margin: .3rem 0 0 1.15rem; max-width: 64ch; }
   .hero h1 br { display: none; }
   .content { display: block; padding: .8rem 0; }
   .script { gap: 1rem; }
-  .stage { break-inside: avoid; }
-  .stage-body { grid-template-columns: 1.25fr 1fr; }
+  .step { break-inside: avoid; }
+  .stage > header { break-after: avoid; }
+  .output { background: #fff; color: #000; border: 1px solid #aaa; }
   .stage > header h2, .questions h2 { font-size: 17pt; }
   .command { background: white; color: black; border: 1px solid #999; }
   .link { color: black; }

@@ -20,7 +20,7 @@
   <main id="main" class="wrap">
     <section class="hero" aria-labelledby="title">
       <div class="hero-text">
-        <p class="eyebrow">ІПЗ-31 · СЦЕНАРІЙ ЗАХИСТУ · 7 ХВ</p>
+        <p class="eyebrow">ІПЗ-31 · СЦЕНАРІЙ ЗАХИСТУ · 15 ХВ</p>
         <h1 id="title">Race <br>Condition<span>.</span></h1>
         <p class="subtitle">Синхронізація потоків і втрачені оновлення</p>
         <p class="byline">Тарас Загорський · Назар Новосел · Іван Боровиков</p>
@@ -45,93 +45,228 @@
     <div class="content">
       <aside class="sidebar">
         <nav aria-label="Етапи захисту">
-          <p class="eyebrow">ЧЕРГА ВИСТУПІВ</p>
-          <a href="#taras">00:00 <span>Тарас · основний експеримент</span></a>
-          <a href="#nazar">03:20 <span>Назар · взаємне блокування</span></a>
-          <a href="#ivan">05:15 <span>Іван · модель пам’яті</span></a>
+          <p class="eyebrow">ЕТАПИ ЗАХИСТУ</p>
+          <a class="nav-extra" href="#prep"><span>Підготовка</span></a>
+          <a href="#taras">00:00 <span>Тарас · лічильник і заміри</span></a>
+          <div class="step-links"><a href="#t-counter">Лічильник</a><a href="#t-trace">Трасування</a><a href="#t-data">Заміри E4</a></div>
+          <a href="#nazar">05:00 <span>Назар · модель банку</span></a>
+          <div class="step-links"><a href="#n-global">Інваріант</a><a href="#n-deadlock">Deadlock</a><a href="#n-order">Порядок замків</a></div>
+          <a href="#ivan">10:00 <span>Іван · порядок пам’яті</span></a>
+          <div class="step-links"><a href="#i-model">Схема</a><a href="#i-live">Запуск</a><a href="#i-data">Дані CSV</a></div>
+          <a class="nav-extra" href="#evidence"><span>Серії, код і дані</span></a>
+          <a class="nav-extra" href="#questions"><span>Запитання викладача</span></a>
         </nav>
         <button class="button print" type="button" hidden>Друк сценарію</button>
       </aside>
 
       <div id="scenario" class="script">
         <section class="prep" aria-labelledby="prep">
-          <h2 id="prep">Перед захистом</h2>
-          <p>Відкрийте PDF і термінал у кореневій теці «Operation Systme». Перевірте <code>./demo.sh stem 2</code>. На екрані тримайте цю сторінку, звіт і термінал. Якщо запуск зірветься, відкрийте збережений результат із відповідного етапу.</p>
+          <h2 id="prep">Підготовка перед виступом</h2>
+          <ol>
+            <li>На Mac відкрийте термінал у корені проєкту. Перед показом підготуйте дві програми у тимчасовій теці. Використовуйте те саме вікно термінала для всіх команд, щоб збереглася змінна <code>stem_build</code>.</li>
+            <li>Перевірте запуск лічильника. Відкрийте звіт, графіки й резервні скріншоти у вкладках. Збільште шрифт термінала для проєктора.</li>
+            <li>На захисті показуйте команди з карток. Позначка «Приклад виводу» означає фрагмент пробного запуску. Значення, що залежать від чергування потоків, можуть змінитися.</li>
+          </ol>
+          <div class="command"><code class="multiline">cd &#x27;/Users/taras/Desktop/unik/Operation Systme&#x27; &amp;&amp;
+  stem_build=&quot;$(mktemp -d)&quot; &amp;&amp;
+  cc -O2 -pthread &#x27;STEM PROJECT/код/bank.c&#x27; -o &quot;$stem_build/bank&quot; &amp;&amp;
+  cc -std=c11 -O2 -pthread &#x27;STEM PROJECT/код/litmus_sb.c&#x27; -o &quot;$stem_build/litmus_sb&quot;</code><button type="button" class="copy" hidden>Копіювати</button></div>
+          <p><a class="link" href="assets/report.pdf" target="_blank" rel="noopener">Відкрити звіт PDF ↗</a> · <a class="link" href="#evidence">Серії, код і дані ↓</a></p>
         </section>
 
         <article class="stage" id="taras">
-          <header><p class="eyebrow">00:00–03:20 · ТАРАС ЗАГОРСЬКИЙ</p><h2>Від гонитви до правильного результату</h2></header>
-          <div class="stage-body">
-            <div>
-              <h3>Що сказати</h3>
-              <p>«Запускаю чотири потоки. Кожен додає мільйон одиниць до спільного лічильника, тож очікуємо 4 мільйони. У першому запуску губиться частина збільшень. У другому м’ютекс захищає всю операцію: прочитати, збільшити й записати».</p>
-              <p>«Подивімося, куди поділося оновлення. Два потоки прочитали 100 грн. Один записав 150, другий записав 130 зі старого балансу. З м’ютексом другий потік прочитав уже 150, тож результат — 180 грн».</p>
-              <p>«Тепер порівняємо час. У десяти повторах на кожній платформі обидва способи дали правильний підсумок. Медіана часу м’ютекса була більшою за медіану атомарного додавання у 1,71 раза на ARM64 і 4,06 раза на x86‑64. Порівнюю способи в межах кожної машини».</p>
-            </div>
-            <div>
-              <h3>Що показати</h3>
-              <p>Порівняйте «Очікувано» та «Отримано» у двох запусках.</p>
-              <div class="command"><code>./demo.sh stem 2</code><button type="button" class="copy" hidden>Копіювати</button></div>
-              <p>Покажіть два читання 100 грн і правильний підсумок 180 грн.</p>
-              <div class="command"><code>./demo.sh stem 3</code><button type="button" class="copy" hidden>Копіювати</button></div>
-              <p>Порівняйте медіани <b>atomic</b> та <b>mutex</b> у терміналі або на графіку.</p>
-              <div class="command"><code>./demo.sh stem 4</code><button type="button" class="copy" hidden>Копіювати</button></div>
-              <a class="link" href="assets/benchmark.png" target="_blank" rel="noopener">Графік часу ↗</a>
-              <a class="link" href="assets/race-demo.png" target="_blank" rel="noopener">Резерв · лічильник ↗</a>
-              <a class="link" href="assets/race-trace.png" target="_blank" rel="noopener">Резерв · банкомати ↗</a>
-            </div>
-          </div>
-          <p class="cue"><b>Передача Назару</b> «Ми захистили лічильник одним м’ютексом. Назаре, покажи, що може статися з двома».</p>
+          <header><p class="eyebrow">00:00–05:00 · ТАРАС ЗАГОРСЬКИЙ</p><h2>Лічильник і ціна синхронізації</h2></header>
+          <section class="step" id="t-counter">
+            <h3><span>00:00</span> Запустити лічильник у двох режимах</h3>
+            <p class="say"><b>Скажи.</b> «Перевіряємо дві речі: чи правильна відповідь і скільки часу вона коштує. Тут чотири потоки. Кожен додає одиницю мільйон разів. Якщо кожне оновлення збереглося, наприкінці отримаємо чотири мільйони».</p>
+            <div class="command"><code>./demo.sh stem 2</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>$ ./race_demo 4 1000000
+Режим: без захисту потоків:  4  ітерацій: 1000000
+Очікувано:    4000000   Отримано:    1411522   Втрачено:   2588478 (64.71 %)  &lt;-- RACE CONDITION
+$ ./race_demo 4 1000000 --mutex
+Режим: з м&#x27;ютексом потоків:  4  ітерацій: 1000000
+Очікувано:    4000000   Отримано:    4000000   Втрачено:         0 (0.00 %)  OK</code></pre></figure>
+            <p><b>Покажи.</b> У першому запуску виділи <code>Очікувано</code> й <code>Отримано</code>. Рядок <code>Втрачено</code> — різниця між ними. У другому покажи підсумок 4 000 000 та 0 втрат. Скрипт компілює <code>race_demo.c</code> і викликає ту саму програму з аргументами <code>4 1000000</code>, а потім додає <code>--mutex</code>.</p>
+            <p class="say"><b>Поясни.</b> «Коли ми читаємо, додаємо й записуємо спільне значення, два потоки можуть прочитати однакову стару копію. М’ютекс захищає всю трійку дій. Інший потік дочекається завершення запису».</p>
+            <details><summary>Фрагмент race_demo.c · критична секція</summary><pre class="output"><code>for (long i = 0; i &lt; iterations; i++) {
+    if (use_mutex) pthread_mutex_lock(&amp;lock);    /* вхід у критичну секцію  */
+    counter++;                                   /* критична секція         */
+    if (use_mutex) pthread_mutex_unlock(&amp;lock);  /* вихід з критичної секції */
+}</code></pre></details>
+            <a class="link" href="assets/race-demo.png" target="_blank" rel="noopener">Резервний скріншот ↗</a>
+          </section>
+          <section class="step" id="t-trace">
+            <h3><span>01:20</span> Знайти рядок, який затирає оновлення</h3>
+            <div class="command"><code>./demo.sh stem 3</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>$ ./race_trace
+=== БЕЗ СИНХРОНІЗАЦІЇ ===
+Початковий баланс: 100 грн
+[  0.11 мс] Банкомат-1: прочитав баланс = 100
+[  6.38 мс] Банкомат-2: прочитав баланс = 100
+[ 20.54 мс] Банкомат-1: записав баланс  = 150 (+50)
+[ 31.44 мс] Банкомат-2: записав баланс  = 130 (+30)
+Підсумковий баланс: 130 грн (очікувано 180) -&gt; ВТРАЧЕНО ОНОВЛЕННЯ!
+$ ./race_trace --mutex
+=== З М&#x27;ЮТЕКСОМ ===
+Початковий баланс: 100 грн
+[  0.08 мс] Банкомат-1: прочитав баланс = 100
+[ 20.59 мс] Банкомат-1: записав баланс  = 150 (+50)
+[ 20.84 мс] Банкомат-2: прочитав баланс = 150
+[ 45.92 мс] Банкомат-2: записав баланс  = 180 (+30)
+Підсумковий баланс: 180 грн (очікувано 180) -&gt; КОРЕКТНО</code></pre></figure>
+            <p><b>Покажи.</b> Спочатку виділи два читання 100 грн. Потім записи 150 і 130 грн. У блоці з м’ютексом знайди читання 150 грн другим банкоматом.</p>
+            <p class="say"><b>Скажи.</b> «Перший банкомат додав 50 до 100 і зберіг 150. Другий додав 30 до своєї копії зі значенням 100 і записав 130. Через це поповнення на 50 зникло. У прикладі між читанням і записом є штучна пауза, щоб було видно чергування. З м’ютексом другий бачить 150 і доводить баланс до 180».</p>
+            <p><b>Якщо спитають про код.</b> У <a href="assets/report.pdf#page=17" target="_blank" rel="noopener">розділі 3.2</a> відкрий функцію банкомата. Покажи, що блокування стоїть перед читанням, а розблокування після запису. Позначай 130 як приклад цього порядку виконання.</p>
+            <a class="link" href="assets/race-trace.png" target="_blank" rel="noopener">Резервний скріншот ↗</a>
+          </section>
+          <section class="step" id="t-data">
+            <h3><span>02:45</span> Прочитати таблицю замірів E4</h3>
+            <div class="command"><code>./demo.sh stem 4</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Збережені заміри E4</figcaption><pre class="output"><code>ARM64 · E4 · 4 потоки × 1 000 000
+none     коректних  0/10  медіана    4.05 мс
+mutex    коректних 10/10  медіана  237.98 мс
+spin     коректних 10/10  медіана  347.51 мс
+sem      коректних 10/10  медіана  399.84 мс
+atomic   коректних 10/10  медіана  139.32 мс
+local    коректних 10/10  медіана    2.42 мс
+
+x86-64 · E4 · 4 потоки × 1 000 000
+none     коректних  0/10  медіана    6.27 мс
+mutex    коректних 10/10  медіана  262.00 мс
+spin     коректних 10/10  медіана  758.17 мс
+sem      коректних 10/10  медіана  836.95 мс
+atomic   коректних 10/10  медіана   64.51 мс
+local    коректних 10/10  медіана    7.00 мс</code></pre></figure>
+            <p><b>Покажи.</b> Скрипт читає збережені CSV і відкриває графік. У рядках <code>atomic</code> і <code>mutex</code> покажи <code>10/10</code>, потім порівняй мілісекунди окремо для кожної машини. На графіку порівнюй стовпчики одного кольору. Шкала часу логарифмічна.</p>
+            <p class="say"><b>Скажи.</b> «У кожному режимі виконали 10 запусків по чотири мільйони запланованих збільшень. Медіана — середина впорядкованих значень часу. На ARM64 м’ютекс дав приблизно 238 мс, атомарне додавання — 139 мс. На x86‑64 це 262 і 65 мс. У цих умовах м’ютекс мав у 1,71 та 4,06 раза більший медіанний час відповідно».</p>
+            <p class="say"><b>Додай.</b> «М’ютекс може захистити кілька пов’язаних дій. Атомарне додавання оновлює один лічильник як цілісну операцію. Локальне накопичення швидке, коли потрібна підсумкова сума: кожен потік рахує окремо. Рядок <code>none</code> має нуль правильних запусків, тому його час показую як час помилкового варіанта».</p>
+            <p><b>Межа висновку.</b> На результат впливали конфігурації машин, кількість віртуальних процесорів і версії ПЗ. Співвідношення рахували в межах кожної машини.</p>
+            <a class="link" href="assets/benchmark.png" target="_blank" rel="noopener">Графік E4 ↗</a> · <a class="link" href="assets/report.pdf#page=26" target="_blank" rel="noopener">Таблиця 10 · звіт ↗</a>
+          </section>
+          <p class="cue"><b>Перехід до Назара.</b> «Лічильнику вистачило одного блокування. У наступному прикладі переказ змінює два рахунки, тому виникає питання порядку захоплення двох м’ютексів».</p>
         </article>
 
         <article class="stage" id="nazar">
-          <header><p class="eyebrow">03:20–05:15 · НАЗАР НОВОСЕЛ</p><h2>Два м’ютекси в моделі банку</h2></header>
-          <div class="stage-body">
-            <div>
-              <h3>Що сказати</h3>
-              <p>«У банку кожен переказ змінює два рахунки. Перший потік захоплює м’ютекс рахунку A і чекає B. Другий захоплює B і чекає A. У режимі <code>fine_naive</code> сторожовий потік фіксує зупинку прогресу».</p>
-              <p>«У режимі <code>fine_ordered</code> усі потоки захоплюють м’ютекси в порядку номерів рахунків. Цей порядок прибирає цикл очікування. У демонстрації оброблено всі заплановані спроби переказу, а загальна сума залишилася 10 000 грн».</p>
-            </div>
-            <div>
-              <h3>Що показати</h3>
-              <p>Відкрийте результат. Виділіть рядок <b>DEADLOCK</b> у <code>fine_naive</code> і <b>ІНВАРІАНТ ЗБЕРЕЖЕНО</b> у <code>fine_ordered</code>.</p>
-              <a class="link" href="assets/bank-deadlock.png" target="_blank" rel="noopener">Демонстрація банку ↗</a>
-              <a class="link" href="assets/report.pdf#page=33" target="_blank" rel="noopener">Результати серії E8 · с. 33 ↗</a>
-              <details><summary>Команди для живого показу</summary>
-                <div class="command"><code class="multiline">bank_bin="$(mktemp -d)/bank"
-if cc -O2 -pthread 'STEM PROJECT/код/bank.c' -o "$bank_bin"; then
-  "$bank_bin" fine_naive 4 250000
-  "$bank_bin" fine_ordered 4 250000
-fi</code><button type="button" class="copy" hidden>Копіювати</button></div>
-              </details>
-            </div>
-          </div>
-          <p class="cue"><b>Передача Івану</b> «Іване, покажи, як порядок операцій впливає на те, що бачать потоки».</p>
+          <header><p class="eyebrow">05:00–10:00 · НАЗАР НОВОСЕЛ</p><h2>Перекази та взаємне блокування</h2></header>
+          <section class="step" id="n-global">
+            <h3><span>05:00</span> Встановити, що вважаємо правильним</h3>
+            <div class="command"><code>&quot;$stem_build/bank&quot; global 4 250000</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>Режим: global       потоків: 4, переказів: 1000000
+  сума в банку: 10000 (має бути 10000), різниця: +0
+  випадків від&#x27;ємного балансу: 0, мінімальний баланс: 36
+  час: 107.0 мс -&gt; ІНВАРІАНТ ЗБЕРЕЖЕНО</code></pre></figure>
+            <p class="say"><b>Скажи.</b> «У моделі десять рахунків по тисячі гривень. Переказ переносить гроші між рахунками. Сума має залишатися 10 000 грн, а баланси — невід’ємними. Чотири потоки обробляють по 250 тисяч спроб. Якщо коштів бракує, спробу пропускаємо».</p>
+            <p><b>Покажи.</b> У <code>global</code> один м’ютекс на весь банк. Знайди вивід <code>сума в банку: 10000</code>, нуль від’ємних балансів і <code>ІНВАРІАНТ ЗБЕРЕЖЕНО</code>. Ці поля перевіряємо ще раз після зміни стратегії.</p>
+          </section>
+          <section class="step" id="n-deadlock">
+            <h3><span>06:20</span> Показати, як потоки перестають просуватись</h3>
+            <div class="command"><code>&quot;$stem_build/bank&quot; fine_naive 4 250000</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>Режим: fine_naive   потоків: 4, переказів: 1000000
+  !!! DEADLOCK: виконано 871 з 1000000 переказів, потоки зависли (watchdog 1 с)
+  сума в банку: 10000 (має бути 10000), різниця: +0
+  випадків від&#x27;ємного балансу: 0, мінімальний баланс: 288
+  час: 1470.8 мс -&gt; ВЗАЄМНЕ БЛОКУВАННЯ</code></pre></figure>
+            <p class="say"><b>Скажи.</b> «Для переказу A → B один потік бере замок A і чекає B. Для B → A інший бере B і чекає A. Кожен тримає те, що потрібно іншому. Без звільнення одного замка жоден потік із цієї пари не продовжить роботу».</p>
+            <p><b>Покажи.</b> Виділи <code>DEADLOCK</code> та лічильник оброблених спроб. Watchdog зупиняє демонстрацію, коли лічильник перестає зростати. Код виходу 3 очікуваний. Збереження суми саме по собі не показує, що робота завершилася. Якщо зупинка не проявиться під час показу, відкрий записаний результат.</p>
+            <a class="link" href="assets/bank-deadlock.png" target="_blank" rel="noopener">Записаний результат ↗</a>
+          </section>
+          <section class="step" id="n-order">
+            <h3><span>07:55</span> Змінити порядок і перевірити результат</h3>
+            <div class="command"><code>&quot;$stem_build/bank&quot; fine_ordered 4 250000</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>Режим: fine_ordered потоків: 4, переказів: 1000000
+  сума в банку: 10000 (має бути 10000), різниця: +0
+  випадків від&#x27;ємного балансу: 0, мінімальний баланс: 67
+  час: 96.1 мс -&gt; ІНВАРІАНТ ЗБЕРЕЖЕНО</code></pre></figure>
+            <details><summary>Фрагмент bank.c · порядок замків</summary><pre class="output"><code>        case 3: {                                   /* впорядковане блокування */
+            int lo = from &lt; to ? from : to, hi = from &lt; to ? to : from;
+            pthread_mutex_lock(&amp;acc_lock[lo]); pthread_mutex_lock(&amp;acc_lock[hi]);
+            transfer(from, to, amt);
+            pthread_mutex_unlock(&amp;acc_lock[hi]); pthread_mutex_unlock(&amp;acc_lock[lo]);
+            break;
+        }</code></pre></details>
+            <p><b>Покажи.</b> У фрагменті <code>bank.c</code> нижче знайди <code>lo</code> і <code>hi</code>. Підкресли, що незалежно від напряму переказу потік бере замок з меншим номером першим. У терміналі перевір 10 000 грн, нуль від’ємних балансів та завершення програми.</p>
+            <p class="say"><b>Скажи.</b> «За спільного порядку очікування може йти тільки від меншого номера до більшого, тому цикл замкнутися не може. У серії E8 на кожній платформі зафіксовано зупинку в 10 із 10 запусків <code>fine_naive</code> та в 0 із 10 запусків <code>fine_ordered</code>. Порядок пояснює результат, а повтори показують, що спрацювало у вимірюваннях».</p>
+            <p><b>Якщо спитають про семафори.</b> У серії E7 покажи буфер «виробник–споживач»: <code>empty</code> лічить вільні місця, <code>full</code> — готові елементи, а м’ютекс захищає зміну буфера. У 60 запусках з цим режимом втрат і дублікатів не зафіксовано.</p>
+            <a class="link" href="assets/report.pdf#page=33" target="_blank" rel="noopener">E8 · таблиця 13 ↗</a> · <a class="link" href="assets/report.pdf#page=29" target="_blank" rel="noopener">E7 · семафори ↗</a>
+          </section>
+          <p class="cue"><b>Перехід до Івана.</b> «Порядок захоплення вирішив проблему замків. Далі перевіримо, в якому порядку результати записів стають видимими іншим потокам».</p>
         </article>
 
         <article class="stage" id="ivan">
-          <header><p class="eyebrow">05:15–07:00 · ІВАН БОРОВИКОВ</p><h2>Що бачать потоки</h2></header>
-          <div class="stage-body">
-            <div>
-              <h3>Що сказати</h3>
-              <p>«У Store Buffering два потоки записують одиницю у власну змінну й читають змінну іншого. Спочатку обидві змінні дорівнюють нулю. Ми перевірили, як часто обидва читання повертають нуль».</p>
-              <p>«На Apple M1 Pro провели по п’ять запусків на режим. Атомарні операції <code>relaxed</code> дали 3 643 результати (0, 0) з 5 мільйонів ітерацій. Із бар’єром <code>seq_cst</code> таких випадків у цих запусках не зафіксовано».</p>
-            </div>
-            <div>
-              <h3>Що показати</h3>
-              <p>Відкрийте графік. Сині точки показують п’ять запусків без бар’єра. Помаранчеві позначки лежать на нулі.</p>
-              <a class="link" href="assets/store-buffering.png" target="_blank" rel="noopener">Графік Store Buffering ↗</a>
-              <a class="link" href="assets/report.pdf#page=37" target="_blank" rel="noopener">Звіт · с. 37 ↗</a>
-              <a class="link" href="assets/store-buffering.csv" download>Сирі результати CSV ↓</a>
-            </div>
-          </div>
-          <p class="cue"><b>Завершення</b> «Для спільного лічильника, двох рахунків і порядку читання потрібні різні гарантії. У кожному досліді їх перевірили за конкретним результатом».</p>
+          <header><p class="eyebrow">10:00–15:00 · ІВАН БОРОВИКОВ</p><h2>Атомарність і порядок пам’яті</h2></header>
+          <section class="step" id="i-model">
+            <h3><span>10:00</span> Пояснити, чому нас цікавить пара (0, 0)</h3>
+            <p class="say"><b>Скажи.</b> «У Store Buffering починаємо з X = Y = 0. Потік A записує 1 в X і читає Y. Потік B записує 1 в Y і читає X. За єдиного послідовного порядку хоча б одне читання побачить одиницю. Щоб обидва прочитали нуль, кожне з читань мало б стояти перед записом іншого потоку, а записи при цьому мають стояти перед читаннями у своїх потоках. Виходить цикл».</p>
+            <pre class="output"><code>Початково X = Y = 0
+
+Потік A                      Потік B
+X = 1                        Y = 1
+[бар’єр у режимі fence]      [бар’єр у режимі fence]
+r1 = Y                       r2 = X
+
+Перевірка: r1 == 0 і r2 == 0</code></pre>
+            <p><b>Покажи.</b> Зістав схему з <code>atomic_store_explicit</code> та <code>atomic_load_explicit</code> у <code>litmus_sb.c</code>. В обох режимах змінні атомарні. Режим <code>none</code> лишає <code>memory_order_relaxed</code>, а <code>fence</code> додає <code>atomic_thread_fence(memory_order_seq_cst)</code> між записом і читанням.</p>
+          </section>
+          <section class="step" id="i-live">
+            <h3><span>11:25</span> Запустити обидва режими</h3>
+            <details><summary>Фрагмент litmus_sb.c · запис, бар’єр, читання</summary><pre class="output"><code>        atomic_store_explicit(own, 1, memory_order_relaxed);
+        if (use_fence)
+            atomic_thread_fence(memory_order_seq_cst);
+        *observed = atomic_load_explicit(other, memory_order_relaxed);</code></pre></details>
+            <div class="command"><code class="multiline">&quot;$stem_build/litmus_sb&quot; none 1000000
+&quot;$stem_build/litmus_sb&quot; fence 1000000</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>Приклад виводу · пробний запуск</figcaption><pre class="output"><code>Store Buffering (без бар&#x27;єру): ітерацій 1000000, результат r1=r2=0 спостерігався 631 разів (0.063 %)
+Store Buffering (з бар&#x27;єром seq_cst): ітерацій 1000000, результат r1=r2=0 спостерігався 0 разів (0.000 %)</code></pre></figure>
+            <p><b>Покажи.</b> Аргумент 1 000 000 — кількість ітерацій за режим. У кожному рядку знайди лічильник випадків (0, 0). В одному живому запуску <code>none</code> теж може дати нуль. Тоді перейди до підготовленої серії з п’яти повторів.</p>
+            <p class="say"><b>Скажи.</b> «Атомарність окремих операцій дає гарантії для доступу до змінної. Порядок пам’яті визначає, як такі операції узгоджуються між потоками. У цьому тесті ми змінюємо лише наявність бар’єра між записом та читанням».</p>
+          </section>
+          <section class="step" id="i-data">
+            <h3><span>12:50</span> Звірити графік із CSV та сформулювати висновок</h3>
+            <div class="command"><code>cat &#x27;STEM PROJECT/результати/macos_arm64/e9_litmus.csv&#x27;</code><button type="button" class="copy" hidden>Копіювати</button></div>
+            <figure class="terminal"><figcaption>CSV виправленого тесту · macOS ARM64</figcaption><pre class="output"><code>run,variant,iters,reorders,pct
+1,none,1000000,718,0.0718
+1,fence,1000000,0,0.0000
+2,none,1000000,400,0.0400
+2,fence,1000000,0,0.0000
+3,none,1000000,886,0.0886
+3,fence,1000000,0,0.0000
+4,none,1000000,1437,0.1437
+4,fence,1000000,0,0.0000
+5,none,1000000,202,0.0202
+5,fence,1000000,0,0.0000</code></pre></figure>
+            <p><b>Покажи.</b> У CSV <code>run</code> — номер повтору, <code>variant</code> — режим, <code>iters</code> — ітерації, <code>reorders</code> — кількість пар (0, 0), <code>pct</code> — їхня частка у відсотках. На графіку вісь X показує п’ять повторів, вісь Y — кількість таких випадків на мільйон.</p>
+            <p class="say"><b>Скажи.</b> «На M1 Pro без бар’єра отримали 3 643 випадки (0, 0) за п’ять мільйонів ітерацій, тобто приблизно 0,073 %. З бар’єром отримали нуль за такий самий обсяг. Нові дані належать виправленому атомарному тесту на macOS. У звіті також є архівна серія Linux з попередньою реалізацією на <code>volatile</code>».</p>
+            <p><b>Якщо спитають про Петерсона.</b> У звіті окремо наведено втрати збільшень лічильника в реалізації на <code>volatile</code> та відсутність зафіксованих втрат у випробуваному варіанті з <code>seq_cst</code>. Лічильник показує втрачені збільшення. Він не вимірює всі можливі одночасні входи в критичну секцію.</p>
+            <a class="link" href="assets/store-buffering.png" target="_blank" rel="noopener">Графік Store Buffering ↗</a> · <a class="link" href="assets/store-buffering.csv" download>Дані CSV ↓</a> · <a class="link" href="assets/report.pdf#page=37" target="_blank" rel="noopener">Результати · с. 37 ↗</a>
+          </section>
+          <p class="cue"><b>Спільний висновок.</b> «У лічильнику контролювали втрату оновлень, у банку — завершення роботи та збереження суми, у Store Buffering — пару прочитаних значень. Для кожної задачі вибір синхронізації залежав від гарантії, яку ми перевіряли».</p>
         </article>
+
+        <section class="questions" id="evidence" aria-labelledby="series">
+          <h2 id="series">Серії, код і дані</h2>
+          <p>У звіті є 1 180 архівних запусків у двох середовищах Linux і додаткова серія виправленого Store Buffering на macOS. Тут можна відкрити потрібний результат за запитанням викладача.</p>
+          <div class="table-scroll"><table class="evidence-table">
+            <thead><tr><th scope="col">Серія</th><th scope="col">Що перевіряли</th><th scope="col">Де показати</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">E1</th><td>Базова частота і частка втрат</td><td><a href="assets/report.pdf#page=20">С. 20–21</a></td></tr>
+              <tr><th scope="row">E2</th><td>Вплив кількості потоків</td><td><a href="assets/report.pdf#page=21">С. 21–23</a></td></tr>
+              <tr><th scope="row">E3 / E6</th><td>Довжина циклу та рівень оптимізації</td><td><a href="assets/report.pdf#page=23">С. 23–25</a></td></tr>
+              <tr><th scope="row">E4 / E5</th><td>Коректність, медіани та масштабування</td><td><a href="assets/report.pdf#page=25">С. 25–29</a></td></tr>
+              <tr><th scope="row">E7</th><td>Буфер виробника та споживача</td><td><a href="assets/report.pdf#page=29">С. 29–31</a></td></tr>
+              <tr><th scope="row">E8</th><td>Баланс банку та взаємне блокування</td><td><a href="assets/report.pdf#page=31">С. 31–34</a></td></tr>
+              <tr><th scope="row">E9</th><td>Петерсон і Store Buffering</td><td><a href="assets/report.pdf#page=34">С. 34–37</a></td></tr>
+            </tbody>
+          </table></div>
+          <p>Відтворення запусків описано в <a href="assets/report.pdf#page=42">додатку А</a>, вихідний код — у <a href="assets/report.pdf#page=43">додатку Б</a>, висновки — на <a href="assets/report.pdf#page=40">с. 40</a>.</p>
+        </section>
 
         <section class="questions" aria-labelledby="questions">
           <h2 id="questions">Запитання після виступу</h2>
           <details><summary>Хто за яку частину відповідав?</summary><p>Розподіл роботи наведено в таблиці 1. <a class="link" href="assets/report.pdf#page=5" target="_blank" rel="noopener">Внесок команди · с. 5 ↗</a></p></details>
           <details><summary>Чому кожен запуск без м’ютекса дає різне число?</summary><p>Кількість втрачених оновлень залежить від того, як чергуються читання і записи різних потоків.</p></details>
+          <details><summary>Чому volatile не виправляє гонитву?</summary><p>Воно впливає на звернення компілятора до змінної. Для потоків потрібна атомарність або синхронізація, що впорядковує доступ до спільних даних.</p></details>
+          <details><summary>Чим deadlock відрізняється від втрати оновлення?</summary><p>При втраченому оновленні програма може завершитися з хибною відповіддю. При циклічному очікуванні учасники циклу перестають просуватися. Тому в моделі банку перевіряли і баланс, і прогрес.</p></details>
+          <details><summary>Де в коді забезпечується атомарність?</summary><p>У лічильнику м’ютекс захищає всю послідовність читання, збільшення й запису. У режимі atomic цю послідовність над однією змінною виконує атомарне додавання. У Store Buffering запис і читання є окремими атомарними операціями, а бар’єр регулює їхній порядок.</p></details>
           <details><summary>Чому локальне накопичення швидше?</summary><p>Потоки працюють із приватними значеннями. Вони об’єднують результати наприкінці, тому підхід підходить, коли потрібна підсумкова сума.</p></details>
           <details><summary>Чи доводять заміри, що одна архітектура швидша?</summary><p>Ми порівнювали дві конкретні системи. Вони мали різні процесори, кількість віртуальних процесорів і версії ПЗ. Перевага атомарного додавання над м’ютексом спостерігалась усередині обох систем.</p></details>
         </section>
